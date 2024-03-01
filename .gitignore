@@ -149,3 +149,9 @@ dmypy.json
 static/
 posts/static/
 media/
+
+# Игнорировать файлы базы данных с расширением .db
+*.db
+
+# Игнорировать файл логирования log.txt
+log.txt

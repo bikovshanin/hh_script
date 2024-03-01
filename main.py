@@ -14,10 +14,18 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from database import db_insert_query, db_select_query
-from exceptions import DataBaseError, HTTPStatusNotOk, TelegramSendMessageError
+from exceptions import DataBaseError, HTTPStatusNot204, TelegramSendMessageError
 from utils import convert_seconds
 
 load_dotenv()
+
+logging.basicConfig(
+    format=('%(asctime)s - %(levelname)s - '
+            '%(name)s - %(funcName)s - %(lineno)d - %(message)s'),
+    level=logging.INFO,
+    handlers=[logging.StreamHandler(sys.stdout),
+              logging.FileHandler('log.txt', encoding='UTF-8')]
+)
 
 RETRY_PERIOD = 14400
 
@@ -81,8 +89,10 @@ def send_message(message):
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
         logging.info(f'В Telegram отправлено сообщение: {message}')
     except Exception as error:
-        raise TelegramSendMessageError(f'Сбой при отправке '
-                                       f'сообщения в Telegram: {error}')
+        logging.exception(
+            TelegramSendMessageError(f'Сбой при отправке '
+                                     f'сообщения в Telegram: {error}')
+        )
 
 
 def get_user_auth_code():
@@ -129,7 +139,9 @@ def post_to_db(response):
         db_insert_query(response['access_token'], response['refresh_token'],
                         expires_in)
     except Exception as error:
-        raise DataBaseError(f'Ошибка при записи в базу данных: {error}')
+        logging.exception(
+            DataBaseError(f'Ошибка при записи в базу данных: {error}')
+        )
 
 
 def get_api_tokens(form):
@@ -183,7 +195,7 @@ def main():
         try:
             cv_response = execute_rise_cv_up()
             if cv_response.status_code != HTTPStatus.NO_CONTENT:
-                raise HTTPStatusNotOk(
+                raise HTTPStatusNot204(
                     f'Код ошибки: {cv_response}'
                     f'\n{cv_response.text}'
                 )
@@ -196,11 +208,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(
-        format=('%(asctime)s - %(levelname)s - '
-                '%(name)s - %(funcName)s - %(lineno)d - %(message)s'),
-        level=logging.INFO,
-        handlers=[logging.StreamHandler(sys.stdout),
-                  logging.FileHandler('log.txt', encoding='UTF-8')]
-    )
     main()

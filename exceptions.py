@@ -8,6 +8,6 @@ class TelegramSendMessageError(Exception):
     pass
 
 
-class HTTPStatusNotOk(Exception):
+class HTTPStatusNot204(Exception):
     """Статус запроса к API отличный от "Ok"."""
     pass
