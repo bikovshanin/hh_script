@@ -23,7 +23,7 @@ class Tokens(Base):
                 f'- {self.refresh_token} {self.expires_in}')
 
 
-engine = create_engine('sqlite:///tgdb.db')
+engine = create_engine('sqlite:///hhdb.db')
 Base.metadata.create_all(bind=engine)
 
 

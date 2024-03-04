@@ -14,7 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from database import db_insert_query, db_select_query
-from exceptions import DataBaseError, HTTPStatusNot204, TelegramSendMessageError
+from exceptions import (DataBaseError, HTTPStatusNot204,
+                        TelegramSendMessageError)
 from utils import convert_seconds
 
 load_dotenv()
@@ -29,7 +30,6 @@ logging.basicConfig(
 
 RETRY_PERIOD = 14400
 
-DRIVER_PATH = '/chromedriver_mac_arm64/chromedriver'
 USER_AGENT = ('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
               'AppleWebKit/537.36 (KHTML, like Gecko) '
               'Chrome/121.0.0.0 Safari/537.36')
@@ -100,7 +100,6 @@ def get_user_auth_code():
     options = webdriver.ChromeOptions()
     options.add_argument(f'user-agent={USER_AGENT}')
     options.add_argument('--headless')
-    options.binary_location = DRIVER_PATH
     driver = webdriver.Chrome(options=options)
     driver.get(CODE_URL)
     username_input = WebDriverWait(driver, 10).until(
@@ -113,7 +112,7 @@ def get_user_auth_code():
     password_input.send_keys(HH_PASSWORD)
     try:
         driver.find_element(By.XPATH, SUBMIT_BUTTON_SELECTOR).click()
-        logging.info('Кнопка успешно нажата.')
+        logging.info('Кнопка для получения кода авторизации успешно нажата.')
     except Exception as error:
         logging.error(f'Произошла ошибка при нажатии кнопки: {error}')
     time.sleep(10)
@@ -194,6 +193,10 @@ def main():
     while True:
         try:
             cv_response = execute_rise_cv_up()
+            logging.info(
+                f'Дата публикации обновлена успешно, '
+                f'ответ сервера - {cv_response.status_code}'
+            )
             if cv_response.status_code != HTTPStatus.NO_CONTENT:
                 raise HTTPStatusNot204(
                     f'Код ошибки: {cv_response}'
